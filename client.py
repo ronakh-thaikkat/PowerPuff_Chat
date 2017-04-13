@@ -108,7 +108,6 @@ class HomeFrame(Frame):
         s.sendall(str.encode('PrvChtMem'))
         data = s.recv(1024)
         memList.append(data.decode('utf-8'))
-        print('this is happeijnggg')
         while data.decode('utf-8') != 'overx3bajunca':
             data = s.recv(1096)
             memList.append(data.decode('utf-8'))
@@ -120,6 +119,7 @@ class HomeFrame(Frame):
         check = 1
         self.newWindow = tk.Toplevel(self.master)
         self.pf = GroupFrame(self.newWindow)
+        self.pf.pack(fill="both", expand=True)
 
 # -------After login checked, the chat box starts from here.
 
@@ -131,26 +131,30 @@ class GroupFrame(Frame):
         self.master.geometry("400x500")
         self.master.resizable(width=FALSE, height=FALSE)
         self.master.title("PowerPuff Chat Girls")
-        self.ChatLog = Text(self, bd=0, bg="light grey", height="13", width="55", font="Arial", )
-        self.ChatLog.insert(END, 'Welcome to the PowerPuff Chat, ' + username + '\n', 'INIT')  # THIS IS HERE <-----------------
+
+        #TextArea
+        self.ChatLog = Text(self, bd=0, bg="light grey", height="13", width="55", font="Arial")
+        self.ChatLog.insert(END, 'Welcome to the PowerPuff Chat, ' + username + '\n', 'INIT')
         self.ChatLog.config(state=DISABLED)
         self.ChatLog.tag_config('INIT', foreground='red', justify=CENTER)
         self.ChatLog.tag_config('BLUE', foreground='blue', justify=LEFT)
         self.ChatLog.tag_config('BLK', foreground='black', justify=RIGHT)
 
-        # Bind a scrollbar to the Chat window
+        #ScrollBar
         self.scrollbar = Scrollbar(self, command = self.ChatLog.yview, cursor="heart")
         self.ChatLog['yscrollcommand'] = self.scrollbar.set
 
-        # Create the box to enter message
+        #EntryBox
         self.EntryBox = Text(self, bg="white", width="29", height="5", font="Arial")
+        self.EntryBox.bind("<KeyRelease-Return>", lambda event: sendData(self.EntryBox.get(1.0, END)))
 
-        # Create the Button to send message
+        #SendButton
         self.SendButton = Button(self, font=30, text="Send", width="11", height=1,
-                            bg="white", fg='navy blue', activebackground="#FACC2E")
+                            bg="white", fg='navy blue', activebackground="#FACC2E",  command=lambda: sendData(self.EntryBox.get(1.0, END)))
 
-        # Place all components on the screen
+        #Place them on Screen
         self.scrollbar.place(x=380, y=6, height=386)
+
         self.ChatLog.place(x=8, y=6, height=405, width=370)
         self.EntryBox.place(x=128, y=425, height=60, width=248)
         self.SendButton.place(x=6, y=425, height=60)
