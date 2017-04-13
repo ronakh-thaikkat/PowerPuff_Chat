@@ -1,10 +1,18 @@
 from tkinter import *
 import tkinter.messagebox as tm
+import tkinter as tk
 
 username = ''
 check = 0
 pageCheck = 0
 do = 0
+# class PrivateChat:
+#     def __init__(self, master):
+#         self.master = master
+#         self.frame = Frame(self.master)
+#         self.button1 = Button(self.frame, text = 'New Window', width = 25)
+#         self.button1.pack()
+#         self.frame.pack()
 # ------------Class for the login here. -
 class LoginFrame(Frame):
     def __init__(self, master):
@@ -59,10 +67,22 @@ class MemFrame(Frame):
         super().__init__(master)
         global memList
         global rootHome
+        self.master.geometry("400x500")
+        self.master.resizable(width=FALSE, height=FALSE)
         self.displayArea = Text(self)
         self.displayArea.insert(END, 'The current active members of PowerPuff Chat are: \n')
-        self.displayArea.insert(END,  '---------------------------------------------------\n')
-        self.displayArea.grid(row = 6)
+        self.displayArea.insert(END,  '-------------------------------------------------\n')
+        self.displayArea.pack()
+        self.labelArea = Label(self, text = 'I want to chat with : ')
+        self.labelArea.pack(side=LEFT)
+        self.entreyArea = Entry(self)
+        self.entreyArea.pack(side = LEFT)
+        self.goButton = Button(self, text='Talk')
+        self.goButton.pack(side=LEFT)
+        self.goBackButton = Button(self, text = 'Go back to home page', command = self._go_back)
+        self.goBackButton.pack(side = BOTTOM)
+
+
         self.displayArea.config(state=NORMAL)
         for c in memList:
             if c == 'overx3bajunca':
@@ -71,6 +91,9 @@ class MemFrame(Frame):
         self.displayArea.config(state=DISABLED)
         self.pack()
 
+    def _go_back(self):
+         self.destroy()
+         HomeFrame(page)
 
 class HomeFrame(Frame):
     def __init__(self, master):
@@ -95,8 +118,69 @@ class HomeFrame(Frame):
     def _go_group(self):
         global check, do
         check = 1
-        page.destroy()
+        self.newWindow = tk.Toplevel(self.master)
+        self.pf = GroupFrame(self.newWindow)
 
+# -------After login checked, the chat box starts from here.
+
+class GroupFrame(Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        global memList
+        global rootHome
+        self.master.geometry("400x500")
+        self.master.resizable(width=FALSE, height=FALSE)
+        self.master.title("PowerPuff Chat Girls")
+        self.ChatLog = Text(self, bd=0, bg="light grey", height="13", width="55", font="Arial", )
+        self.ChatLog.insert(END, 'Welcome to the PowerPuff Chat, ' + username + '\n', 'INIT')  # THIS IS HERE <-----------------
+        self.ChatLog.config(state=DISABLED)
+        self.ChatLog.tag_config('INIT', foreground='red', justify=CENTER)
+        self.ChatLog.tag_config('BLUE', foreground='blue', justify=LEFT)
+        self.ChatLog.tag_config('BLK', foreground='black', justify=RIGHT)
+
+        # Bind a scrollbar to the Chat window
+        self.scrollbar = Scrollbar(self, command = self.ChatLog.yview, cursor="heart")
+        self.ChatLog['yscrollcommand'] = self.scrollbar.set
+
+        # Create the box to enter message
+        self.EntryBox = Text(self, bg="white", width="29", height="5", font="Arial")
+
+        # Create the Button to send message
+        self.SendButton = Button(self, font=30, text="Send", width="11", height=1,
+                            bg="white", fg='navy blue', activebackground="#FACC2E")
+
+        # Place all components on the screen
+        self.scrollbar.place(x=380, y=6, height=386)
+        self.ChatLog.place(x=8, y=6, height=405, width=370)
+        self.EntryBox.place(x=128, y=425, height=60, width=248)
+        self.SendButton.place(x=6, y=425, height=60)
+
+        def sendData(param):
+            if param == '\n\n':
+                self.EntryBox.delete(1.0, END)
+                return
+            if len(param) > 1:
+                if '\n\n' in param:
+                    # strip both the carriage return and appened with only one.
+                    param = param.rstrip('\n')
+                    param = param + '\n'
+                self.EntryBox.delete(1.0, END)
+                insertText(1, '>>' + param)
+                s.sendall(str.encode(param))
+                data = s.recv(4500)
+                if 'privateInit' in data.decode('utf-8'):
+                    pass
+
+                insertText(2, '>>' + data.decode('utf-8'))
+                self.ChatLog.see(END)  # this shows the END of the chatlog; auto scroll down
+
+        def insertText(num, param):
+            self.ChatLog.config(state=NORMAL)
+            if num == 1:
+                self.ChatLog.insert(END, param, 'BLK')
+            else:
+                self.ChatLog.insert(END, param, 'BLUE')
+            self.ChatLog.config(state=DISABLED)
 
 page = Tk()
 page.title('Login - PowerPuff Chat : Where life happens')
@@ -105,63 +189,4 @@ page.resizable(width=FALSE, height=FALSE)
 pf = HomeFrame(page)
 page.mainloop()
 
-# -------After login checked, the chat box starts from here.
-
-
-def sendData(param):
-    if param == '\n\n':
-        EntryBox.delete(1.0,END)
-        return
-    if len(param) > 1:
-        if '\n\n' in param:
-            #strip both the carriage return and appened with only one.
-            param =  param.rstrip('\n')
-            param = param + '\n'
-        EntryBox.delete(1.0, END)
-        insertText(1, '>>' + param)
-        s.sendall(str.encode(param))
-        data = s.recv(4500)
-        insertText(2, '>>' + data.decode('utf-8'))
-        ChatLog.see(END)                  #this shows the END of the chatlog; auto scroll down
-
-def insertText(num, param):
-    ChatLog.config(state = NORMAL)
-    if num == 1:
-        ChatLog.insert(END, param, 'BLK')
-    else:
-        ChatLog.insert(END, param,'BLUE')
-    ChatLog.config(state = DISABLED)
-
-if check == 1:
-    base = Tk()
-    base.title('PowerPuff Chat Girls')
-    base.geometry("400x500")
-    base.resizable(width=FALSE, height=FALSE)
-
-    #Create a Chat window
-    ChatLog = Text(base, bd=0, bg="light grey", height="13", width="55", font="Arial",)
-    ChatLog.insert(END, 'Welcome to the PowerPuff Chat, ' + username + '\n', 'INIT')   # THIS IS HERE <-----------------
-    ChatLog.config(state = DISABLED)
-    ChatLog.tag_config('INIT', foreground = 'red', justify = CENTER)
-    ChatLog.tag_config('BLUE', foreground = 'blue', justify = LEFT)
-    ChatLog.tag_config('BLK', foreground = 'black', justify = RIGHT)
-
-    #Bind a scrollbar to the Chat window
-    scrollbar = Scrollbar(base, command=ChatLog.yview, cursor="heart")
-    ChatLog['yscrollcommand'] = scrollbar.set
-
-    #Create the box to enter message
-    EntryBox = Text(base, bg="white",width="29", height="5", font="Arial")
-    EntryBox.bind("<KeyRelease-Return>", lambda event: sendData(EntryBox.get(1.0, END)))
-
-    #Create the Button to send message
-    SendButton = Button(base, font=30, text="Send", width="11", height= 1,
-                         bg="white", fg = 'navy blue', activebackground="#FACC2E", command=lambda: sendData(EntryBox.get(1.0, END)))
-
-    #Place all components on the screen
-    scrollbar.place(x=380,y=6, height=386)
-    ChatLog.place(x=8, y=6, height=405, width=370)
-    EntryBox.place(x=128, y=425, height=60, width=248)
-    SendButton.place(x=6, y=425, height=60)
-
-    base.mainloop()
+#-------------------------------------------------------------------------------------
