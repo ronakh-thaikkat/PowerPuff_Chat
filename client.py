@@ -122,7 +122,6 @@ class HomeFrame(Frame):
         self.pf.pack(fill="both", expand=True)
 
 # -------After login checked, the chat box starts from here.
-
 class GroupFrame(Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -154,7 +153,6 @@ class GroupFrame(Frame):
 
         #Place them on Screen
         self.scrollbar.place(x=380, y=6, height=386)
-
         self.ChatLog.place(x=8, y=6, height=405, width=370)
         self.EntryBox.place(x=128, y=425, height=60, width=248)
         self.SendButton.place(x=6, y=425, height=60)
