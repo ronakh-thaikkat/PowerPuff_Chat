@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.messagebox as tm
 import tkinter as tk
+import PrivateClient
 
 username = ''
 check = 0
@@ -77,23 +78,44 @@ class MemFrame(Frame):
         self.labelArea.pack(side=LEFT)
         self.entreyArea = Entry(self)
         self.entreyArea.pack(side = LEFT)
-        self.goButton = Button(self, text='Talk')
+        self.goButton = Button(self, text='Talk', command = self._talk)
         self.goButton.pack(side=LEFT)
         self.goBackButton = Button(self, text = 'Go back to home page', command = self._go_back)
         self.goBackButton.pack(side = BOTTOM)
-
-
         self.displayArea.config(state=NORMAL)
         for c in memList:
             if c == 'overx3bajunca':
                 break
-            self.displayArea.insert(END,'>> ' + c.upper() + '\n')
+            self.displayArea.insert(END,'>> ' + c + '\n')
         self.displayArea.config(state=DISABLED)
         self.pack()
+
 
     def _go_back(self):
          self.destroy()
          HomeFrame(page)
+
+    def _talk(self):
+        toTalkTo = self.entreyArea.get()
+        print('this is memlist' , memList)
+        toTalkTo = toTalkTo.title()
+        s.send(str.encode('privatex3bajunca:' +  toTalkTo))
+        self.entreyArea.delete(0, END)
+        if toTalkTo == '' or toTalkTo == '\n':
+            tm._show('Error', 'You have to enter a username you want to chat with.')
+        elif toTalkTo not in memList:
+            tm._show('Error', 'Sorry, the person is currently not active.')
+        elif toTalkTo in memList:
+            self._opt_private_chat()
+        else:
+            tm._show('Error', 'Sorry, it seems like there is some error. Try again, thanks')
+
+
+    def _opt_private_chat(self):
+        self.newWindow = tk.Toplevel(self.master)
+        self.pf = PrivateClient.PrivateFrame(self.newWindow)
+        self.pf.pack(fill="both", expand=True)
+
 
 class HomeFrame(Frame):
     def __init__(self, master):
@@ -107,10 +129,10 @@ class HomeFrame(Frame):
     def _active_members(self):
         s.sendall(str.encode('PrvChtMem'))
         data = s.recv(1024)
-        memList.append(data.decode('utf-8'))
         while data.decode('utf-8') != 'overx3bajunca':
             data = s.recv(1096)
-            memList.append(data.decode('utf-8'))
+            if data.decode('utf-8') != 'overx3bajunca':
+                memList.append(data.decode('utf-8'))
         self.destroy()
         MemFrame(page)
 
@@ -170,8 +192,11 @@ class GroupFrame(Frame):
                 insertText(1, '>>' + param)
                 s.sendall(str.encode(param))
                 data = s.recv(4500)
-                if 'privateInit' in data.decode('utf-8'):
-                    pass
+
+                if 'privateInitx3bajunca' in data.decode('utf-8'):
+                    self.newWindow = tk.Toplevel(self.master)
+                    self.pf = PrivateClient.PrivateFrame(self.newWindow)
+                    self.pf.pack(fill="both", expand=True)
 
                 insertText(2, '>>' + data.decode('utf-8'))
                 self.ChatLog.see(END)  # this shows the END of the chatlog; auto scroll down

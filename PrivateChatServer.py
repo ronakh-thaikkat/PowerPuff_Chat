@@ -5,16 +5,13 @@ import re, pickle
 
 username = ''
 host = '127.0.0.1'
-port = 5555
-port1 = 5556
+port = 5560
 acc_sockets = []
-address = []
 clients = [] * 200
-clintsDict = {}
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 try:
     s.bind((host, port))
-    # s.bind((host, port1))
     s.setblocking(1)
 except socket.error as e:
     print(str(e))
@@ -27,10 +24,9 @@ remove = 0
 def open_conn_thread(conn, addr):
     # conn.sendall(str.encode('this is test'))
     print(clients)
-    global remove, new, username, clintsDict
-    if addr not in address:
+    global remove, new, username
+    if addr not in clients:
         acc_sockets.append(conn)
-        address.append(addr)
         new = 1
         remove = 0
     while True:
@@ -49,20 +45,9 @@ def open_conn_thread(conn, addr):
         if not data:
             break
 
-        if 'PrvChtMem' in data:
-            print(clients)
-            if len(clients) == 0:
-                conn.sendall(str.encode('None of your friends are online now, sorry :('))
-                conn.sendall(str.encode('overx3bajunca'))
-            else:
-                for c in clients:
-                    conn.sendall(str.encode(c))
-                conn.sendall(str.encode('overx3bajunca'))
-
         if new == 1 and 'initSecName:' in data:
             index = acc_sockets.index(conn)
             username = re.sub('initSecName:', '', data)
-            clintsDict[username] = conn
             clients.insert(index, username)
             remove = 1
 
@@ -71,15 +56,6 @@ def open_conn_thread(conn, addr):
                 c.sendall(str.encode('\n\n** ' + username + ' joined the chat **\n'))
                 new = 0
                 remove = 0
-
-        if 'privatex3bajunca:' in data:
-            privateTalk = data.replace('privatex3bajunca:', '')
-            print('testing this', privateTalk)
-            privateconn= clintsDict.get(privateTalk, 'Missing value')
-            print(privateconn)
-            privateconn.sendall(str.encode('privateInitx3bajunca'))
-
-
         else:
             try:
                 data = clients[acc_sockets.index(conn)] + ': '+ data
