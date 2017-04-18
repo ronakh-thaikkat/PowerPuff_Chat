@@ -3,6 +3,7 @@ from _thread import *
 import time
 import re, pickle
 
+send = 1
 username = ''
 host = '127.0.0.1'
 port = 5555
@@ -25,9 +26,7 @@ remove = 0
 
 
 def open_conn_thread(conn, addr):
-    # conn.sendall(str.encode('this is test'))
-    print(clients)
-    global remove, new, username, clintsDict
+    global remove, new, username, clintsDict, send
     if addr not in address:
         acc_sockets.append(conn)
         address.append(addr)
@@ -35,6 +34,7 @@ def open_conn_thread(conn, addr):
         remove = 0
     while True:
         try:
+            send = 1
             data = conn.recv(4096)
             data = data.decode('utf-8')
         except ConnectionResetError as e:
@@ -50,13 +50,16 @@ def open_conn_thread(conn, addr):
             break
 
         if 'PrvChtMem' in data:
-            print(clients)
-            if len(clients) == 0:
-                conn.sendall(str.encode('None of your friends are online now, sorry :('))
+            send = 0
+            if len(clients) <= 1:
+                conn.sendall(str.encode('None of your friends are online now, sorry :(\n'))
                 conn.sendall(str.encode('overx3bajunca'))
             else:
+                index = acc_sockets.index(conn)
+                cl = clients[index]
                 for c in clients:
-                    conn.sendall(str.encode(c))
+                    if c != cl:
+                        conn.sendall(str.encode(c))
                 conn.sendall(str.encode('overx3bajunca'))
 
         if new == 1 and 'initSecName:' in data:
@@ -65,22 +68,24 @@ def open_conn_thread(conn, addr):
             clintsDict[username] = conn
             clients.insert(index, username)
             remove = 1
+            send = 0
 
         if new == 1 and remove == 1:
+            data = '\n** ' + username + ' joined the chat **\n'
             for c in acc_sockets:
-                c.sendall(str.encode('\n\n** ' + username + ' joined the chat **\n'))
-                new = 0
-                remove = 0
+                try:
+                    c.sendall(str.encode(data))
+                    new = 0
+                    remove = 0
+                except:
+                    pass
 
         if 'privatex3bajunca:' in data:
             privateTalk = data.replace('privatex3bajunca:', '')
-            print('testing this', privateTalk)
             privateconn= clintsDict.get(privateTalk, 'Missing value')
-            print(privateconn)
             privateconn.sendall(str.encode('privateInitx3bajunca'))
 
-
-        else:
+        if send:
             try:
                 data = clients[acc_sockets.index(conn)] + ': '+ data
                 for c in acc_sockets:
