@@ -3,6 +3,7 @@ import tkinter.messagebox as tm
 import tkinter as tk
 import PrivateClient
 
+groupInitial = 0
 username = ''
 check = 0
 do = 0
@@ -21,7 +22,6 @@ class LoginFrame(Frame):
         self.pack()
 
     def _login_btn_clicked(self):
-        print('going once')
         global username, check, root, do, check
         username = self.entry_1.get()
         username = username.rstrip(' ')
@@ -77,7 +77,6 @@ if check == 1:
             self.goBackButton.pack(side = BOTTOM)
             self.displayArea.config(state=NORMAL)
             for c in memList:
-                print(c)
                 if c == 'overx3bajunca':
                     break
                 self.displayArea.insert(END,'>> ' + c + '\n')
@@ -124,11 +123,10 @@ if check == 1:
         def _active_members(self):
             del memList[:]
             s.sendall(str.encode('PrvChtMem'))
-            data = s.recv(1024)
+            data = s.recv(4096)
             while data.decode('utf-8') != 'overx3bajunca':
-                data = s.recv(1096)
-                if data.decode('utf-8') != 'overx3bajunca':
-                    memList.append(data.decode('utf-8'))
+                data = s.recv(4096)
+                memList.append(data.decode('utf-8'))
             self.destroy()
             MemFrame(page)
 
@@ -143,8 +141,11 @@ if check == 1:
     class GroupFrame(Frame):
         def __init__(self, master):
             super().__init__(master)
-            global memList
-            global rootHome
+            global memList,rootHome, groupInitial
+            if not groupInitial:
+                s.sendall(str.encode('groupchatInitx3'))
+                groupInitial = 1
+
             self.master.geometry("400x500")
             self.master.resizable(width=FALSE, height=FALSE)
             self.master.title("PowerPuff Chat Girls")
@@ -188,7 +189,9 @@ if check == 1:
                     insertText(1, '>>' + param)
                     s.sendall(str.encode(param))
                     data = s.recv(4500)
+                    inspectData(data)
 
+            def inspectData(data):
                     if 'privateInitx3bajunca' in data.decode('utf-8'):
                         self.newWindow = tk.Toplevel(self.master)
                         self.pf = PrivateClient.PrivateFrame(self.newWindow)
@@ -209,11 +212,22 @@ if check == 1:
                     self.ChatLog.insert(END, param, 'INIT')
                 self.ChatLog.config(state=DISABLED)
 
+            # while True:
+            #     try:
+            #         data = s.recv(4096)
+            #         inspectData(data)
+            #     except:
+            #         break
+
     page = Tk()
     page.title('Login - PowerPuff Chat : Where life happens')
     page.geometry("400x500")
     page.resizable(width=FALSE, height=FALSE)
     pf = HomeFrame(page)
     page.mainloop()
+
+
+
+
 
 #-------------------------------------------------------------------------------------
