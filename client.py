@@ -2,6 +2,7 @@ from tkinter import *
 import tkinter.messagebox as tm
 import tkinter as tk
 import PrivateClient
+import threading
 
 groupInitial = 0
 username = ''
@@ -55,6 +56,7 @@ if check == 1:
         s.sendall(str.encode('initSecName:'+ username))
         do = 0
     memList = []
+
 
     class MemFrame(Frame):
         def __init__(self, master):
@@ -188,8 +190,6 @@ if check == 1:
                     self.EntryBox.delete(1.0, END)
                     insertText(1, '>>' + param)
                     s.sendall(str.encode(param))
-                    data = s.recv(4500)
-                    inspectData(data)
 
             def inspectData(data):
                     if 'privateInitx3bajunca' in data.decode('utf-8'):
@@ -212,12 +212,16 @@ if check == 1:
                     self.ChatLog.insert(END, param, 'INIT')
                 self.ChatLog.config(state=DISABLED)
 
-            # while True:
-            #     try:
-            #         data = s.recv(4096)
-            #         inspectData(data)
-            #     except:
-            #         break
+            def polling():
+                while True:
+                    try:
+                        polledData = s.recv(4096)
+                        inspectData(polledData)
+                    except:
+                        pass
+
+
+            threading.Thread(target = polling, args=[]).start()
 
     page = Tk()
     page.title('Login - PowerPuff Chat : Where life happens')
