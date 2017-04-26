@@ -37,6 +37,12 @@ def open_conn_thread(conn, addr):
             send = 1
             serverData = conn.recv(4096)
             serverData = serverData.decode('utf-8')
+            print(serverData)
+            if 'initSecName' in serverData or 'groupchatInitx3' in serverData or 'PrvChtMem' in serverData:
+                print('not sending')
+                send = 0
+
+
         except ConnectionResetError as e:
             rmindex = acc_sockets.index(conn)
             acc_sockets.pop(rmindex)
@@ -53,29 +59,31 @@ def open_conn_thread(conn, addr):
             break
 
         if 'PrvChtMem' in serverData:
-            serverData = ''
-            if len(clients) <= 1:
-                conn.sendall(str.encode('None of your friends are online now, sorry :(\n'))
-                conn.sendall(str.encode('overx3bajunca'))
-            else:
-                index = acc_sockets.index(conn)
-                cl = clients[index]
-                for c in clients:
-                    if c != cl:
-                        conn.sendall(str.encode(c))
-                conn.sendall(str.encode('overx3bajunca'))
+            send = 0
+            # index = acc_sockets.index(conn)
+            # print('person asked : ', conn)
+            # cl = clients[index]
+            # for c in clients:
+            #     if c != cl:
+            #         print('sending' , c)
+            #         conn.sendall(str.encode(c))
+            #         print('sending to : ', conn)
+            #     print('sent')
+            # conn.sendall(str.encode('overx3bajunca'))
+            sendMem = pickle.dumps(clients)
+            conn.sendall(sendMem)
 
         if new == 1 and 'initSecName:' in serverData:
             index = acc_sockets.index(conn)
             username = re.sub('initSecName:', '', serverData)
             clintsDict[username] = conn
             clients.insert(index, username)
-            serverData = ''
+
 
         if new == 1 and 'groupchatInitx3' in serverData:
+            userIndex = acc_sockets.index(conn)
+            username = clients[userIndex]
             serverData = '\n** ' + username + ' joined the chat **\n'
-            username = ''
-            send = 0
             for c in acc_sockets:
                 try:
                     c.sendall(str.encode(serverData))
@@ -94,7 +102,8 @@ def open_conn_thread(conn, addr):
             try:
                 serverData = clients[acc_sockets.index(conn)] + ': '+ serverData
                 for c in acc_sockets:
-                    c.sendall(str.encode(serverData))
+                    if c != conn:
+                        c.sendall(str.encode(serverData))
             except:
                 pass
 

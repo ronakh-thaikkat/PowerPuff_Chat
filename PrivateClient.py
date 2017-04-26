@@ -52,13 +52,13 @@ class PrivateFrame(Frame):
                     param = param + '\n'
                 self.EntryBox.delete(1.0, END)
                 insertText(1, '>>' + param)
-                s.sendall(str.encode(param))
-                data = s.recv(4500)
-                if 'privateInit' in data.decode('utf-8'):
-                    pass
-
-                insertText(2, '>>' + data.decode('utf-8'))
-                self.ChatLog.see(END)  # this shows the END of the chatlog; auto scroll down
+                # s.sendall(str.encode(param))
+                # data = s.recv(4500)
+                # if 'privateInit' in data.decode('utf-8'):
+                #     pass
+                #
+                # insertText(2, '>>' + data.decode('utf-8'))
+                # self.ChatLog.see(END)  # this shows the END of the chatlog; auto scroll down
 
         def insertText(num, param):
             self.ChatLog.config(state=NORMAL)

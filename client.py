@@ -3,7 +3,7 @@ import tkinter.messagebox as tm
 import tkinter as tk
 import PrivateClient
 import threading
-
+import pickle
 groupInitial = 0
 username = ''
 check = 0
@@ -78,10 +78,12 @@ if check == 1:
             self.goBackButton = Button(self, text = 'Go back to home page', command = self._go_back)
             self.goBackButton.pack(side = BOTTOM)
             self.displayArea.config(state=NORMAL)
+            if len(memList) <= 1:
+                del memList[:]
+                memList.append('None of your friends are online now, Sorry :(.')
             for c in memList:
-                if c == 'overx3bajunca':
-                    break
-                self.displayArea.insert(END,'>> ' + c + '\n')
+                if c != username:
+                    self.displayArea.insert(END,'>> ' + c + '\n')
             self.displayArea.config(state=DISABLED)
             self.pack()
 
@@ -123,12 +125,19 @@ if check == 1:
             self.pack()
 
         def _active_members(self):
+            global memList
             del memList[:]
             s.sendall(str.encode('PrvChtMem'))
             data = s.recv(4096)
-            while data.decode('utf-8') != 'overx3bajunca':
-                data = s.recv(4096)
-                memList.append(data.decode('utf-8'))
+            memList = pickle.loads(data)
+            print(memList)
+            # memList.append(data.decode('utf-8'))
+            # while data.decode('utf-8') != 'overx3bajunca':
+            #     data = s.recv(4096)
+            #     memList.append(data.decode('utf-8'))
+            # if len(memList) <= 1:
+            #     del memList[:]
+            #     memList.append('None of your friends are online now, Sorry :(')
             self.destroy()
             MemFrame(page)
 
@@ -219,7 +228,6 @@ if check == 1:
                         inspectData(polledData)
                     except:
                         pass
-
 
             threading.Thread(target = polling, args=[]).start()
 
