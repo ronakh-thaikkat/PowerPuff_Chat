@@ -8,6 +8,7 @@ groupInitial = 0
 username = ''
 check = 0
 do = 0
+groupOpen = 0
 # ------------Class for the login here. -
 class LoginFrame(Frame):
     def __init__(self, master):
@@ -80,6 +81,7 @@ if check == 1:
             self.displayArea.config(state=NORMAL)
             if len(memList) <= 1:
                 del memList[:]
+                print('doing this')
                 memList.append('None of your friends are online now, Sorry :(.')
             for c in memList:
                 if c != username:
@@ -125,20 +127,27 @@ if check == 1:
             self.pack()
 
         def _active_members(self):
-            global memList
+            global memList, groupOpen
             del memList[:]
             s.sendall(str.encode('PrvChtMem'))
-            data = s.recv(4096)
-            memList = pickle.loads(data)
-            print(memList)
-            # memList.append(data.decode('utf-8'))
-            # while data.decode('utf-8') != 'overx3bajunca':
-            #     data = s.recv(4096)
-            #     memList.append(data.decode('utf-8'))
-            # if len(memList) <= 1:
-            #     del memList[:]
-            #     memList.append('None of your friends are online now, Sorry :(')
+            print('group status', groupOpen)
+            if groupOpen == 0:
+                data = s.recv(4096)
+                memList = pickle.loads(data)
+                self.destroy()
+                MemFrame(page)
+                # memList.append(data.decode('utf-8'))
+                # while data.decode('utf-8') != 'overx3bajunca':
+                #     data = s.recv(4096)
+                #     memList.append(data.decode('utf-8'))
+                # if len(memList) <= 1:
+                #     del memList[:]
+                #     memList.append('None of your friends are online now, Sorry :(')
             self.destroy()
+            # MemFrame(page)
+        def _private_window(self, List):
+            global memList
+            memList = List
             MemFrame(page)
 
         def _go_group(self):
@@ -152,7 +161,8 @@ if check == 1:
     class GroupFrame(Frame):
         def __init__(self, master):
             super().__init__(master)
-            global memList,rootHome, groupInitial
+            global memList,rootHome, groupInitial,groupOpen
+            groupOpen = 1
             if not groupInitial:
                 s.sendall(str.encode('groupchatInitx3'))
                 groupInitial = 1
@@ -222,9 +232,15 @@ if check == 1:
                 self.ChatLog.config(state=DISABLED)
 
             def polling():
-                while True:
+               while True:
                     try:
                         polledData = s.recv(4096)
+                        try:
+                            list =  pickle.loads(polledData)
+                            print(list)
+                            HomeFrame._private_window(HomeFrame, list)
+                        except:
+                            pass
                         inspectData(polledData)
                     except:
                         pass
@@ -237,9 +253,5 @@ if check == 1:
     page.resizable(width=FALSE, height=FALSE)
     pf = HomeFrame(page)
     page.mainloop()
-
-
-
-
 
 #-------------------------------------------------------------------------------------

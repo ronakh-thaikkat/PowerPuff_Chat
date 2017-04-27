@@ -70,6 +70,7 @@ def open_conn_thread(conn, addr):
             #         print('sending to : ', conn)
             #     print('sent')
             # conn.sendall(str.encode('overx3bajunca'))
+            print('sending', clients)
             sendMem = pickle.dumps(clients)
             conn.sendall(sendMem)
 
