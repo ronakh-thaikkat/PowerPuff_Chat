@@ -253,5 +253,4 @@ if check == 1:
     page.resizable(width=FALSE, height=FALSE)
     pf = HomeFrame(page)
     page.mainloop()
-
 #-------------------------------------------------------------------------------------
