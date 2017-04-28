@@ -64,6 +64,7 @@ if check == 1:
             super().__init__(master)
             global memList
             global rootHome
+            counter = 0
             self.master.geometry("400x500")
             self.master.resizable(width=FALSE, height=FALSE)
             self.displayArea = Text(self)
@@ -79,13 +80,12 @@ if check == 1:
             self.goBackButton = Button(self, text = 'Go back to home page', command = self._go_back)
             self.goBackButton.pack(side = BOTTOM)
             self.displayArea.config(state=NORMAL)
-            if len(memList) <= 1:
-                del memList[:]
-                print('doing this')
-                memList.append('None of your friends are online now, Sorry :(.')
             for c in memList:
                 if c != username:
+                    counter += 1
                     self.displayArea.insert(END,'>> ' + c + '\n')
+            if counter == 0:
+                self.displayArea.insert(END, '>> ' + 'None of your friends are online now, Sorry :(' + '\n')
             self.displayArea.config(state=DISABLED)
             self.pack()
 
@@ -123,6 +123,8 @@ if check == 1:
             self.btn_1 = Button(self, text= "Private chat", command = self._active_members)
             self.btn_1.grid(row = 0 , sticky=E)
             self.btnGroup = Button(self, text = 'Group Chat', command = self._go_group)
+            if groupOpen == 1:
+                self.btnGroup.config(state = DISABLED)
             self.btnGroup.grid(row = 2)
             self.pack()
 
@@ -152,6 +154,7 @@ if check == 1:
 
         def _go_group(self):
             global check, do
+            self.btnGroup.config(state = DISABLED)
             check = 1
             self.newWindow = tk.Toplevel(self.master)
             self.pf = GroupFrame(self.newWindow)
@@ -161,12 +164,11 @@ if check == 1:
     class GroupFrame(Frame):
         def __init__(self, master):
             super().__init__(master)
-            global memList,rootHome, groupInitial,groupOpen
+            global memList,rootHome, groupInitial,groupOpen, initial
             groupOpen = 1
             if not groupInitial:
                 s.sendall(str.encode('groupchatInitx3'))
                 groupInitial = 1
-
             self.master.geometry("400x500")
             self.master.resizable(width=FALSE, height=FALSE)
             self.master.title("PowerPuff Chat Girls")
@@ -196,6 +198,7 @@ if check == 1:
             self.ChatLog.place(x=8, y=6, height=405, width=370)
             self.EntryBox.place(x=128, y=425, height=60, width=248)
             self.SendButton.place(x=6, y=425, height=60)
+
 
             def sendData(param):
                 if param == '\n\n':
@@ -244,7 +247,6 @@ if check == 1:
                         inspectData(polledData)
                     except:
                         pass
-
             threading.Thread(target = polling, args=[]).start()
 
     page = Tk()

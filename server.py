@@ -38,6 +38,7 @@ def open_conn_thread(conn, addr):
             serverData = conn.recv(4096)
             serverData = serverData.decode('utf-8')
             print(serverData)
+            print('recvd from ', conn)
             if 'initSecName' in serverData or 'groupchatInitx3' in serverData or 'PrvChtMem' in serverData:
                 print('not sending')
                 send = 0
@@ -60,16 +61,6 @@ def open_conn_thread(conn, addr):
 
         if 'PrvChtMem' in serverData:
             send = 0
-            # index = acc_sockets.index(conn)
-            # print('person asked : ', conn)
-            # cl = clients[index]
-            # for c in clients:
-            #     if c != cl:
-            #         print('sending' , c)
-            #         conn.sendall(str.encode(c))
-            #         print('sending to : ', conn)
-            #     print('sent')
-            # conn.sendall(str.encode('overx3bajunca'))
             print('sending', clients)
             sendMem = pickle.dumps(clients)
             conn.sendall(sendMem)
@@ -81,12 +72,14 @@ def open_conn_thread(conn, addr):
             clients.insert(index, username)
 
 
-        if new == 1 and 'groupchatInitx3' in serverData:
+        if 'groupchatInitx3' in serverData:
             userIndex = acc_sockets.index(conn)
             username = clients[userIndex]
+            print('sending user name :', username)
             serverData = '\n** ' + username + ' joined the chat **\n'
             for c in acc_sockets:
                 try:
+                    print('sendint to : ', c)
                     c.sendall(str.encode(serverData))
                     new = 0
                     remove = 0
@@ -104,6 +97,7 @@ def open_conn_thread(conn, addr):
                 serverData = clients[acc_sockets.index(conn)] + ': '+ serverData
                 for c in acc_sockets:
                     if c != conn:
+                        print('sending to : ', c)
                         c.sendall(str.encode(serverData))
             except:
                 pass
